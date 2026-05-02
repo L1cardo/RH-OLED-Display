@@ -1,0 +1,17 @@
+{
+    "domain": "rh_oled_display",
+    "name": "RotorHazard OLED Display Licardo Edition",
+    "author": "Licardo",
+    "author_uri": "https://space.bilibili.com/7403418",
+    "license": "MIT",
+    "license_uri": "https://github.com/l1cardo/RH-OLED-Display/blob/main/LICENSE",
+    "description": "Displays voltage sensor data and race information on I2C OLED displays (SH1106/SSD1306)",
+    "documentation_uri": "https://github.com/l1cardo/RH-OLED-Display.git",
+    "required_rhapi_version": "1.0",
+    "version": "1.0.0",
+    "dependencies": [
+        "luma.oled",
+        "pillow"
+    ],
+    "zip_filename": "rh_oled_display.zip"
+}

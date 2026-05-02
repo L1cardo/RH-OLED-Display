@@ -1,0 +1,76 @@
+name: Release on Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+  push:
+    tags:
+      - v*.*.*
+
+env:
+  REPO_NAME: RH-OLED-Display
+  PLUGIN_NAME: rh_oled_display
+
+jobs:
+  validate:
+    name: Validate with RHFest
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+
+      - name: 🚀 Run RHFest validation
+        uses: docker://ghcr.io/rotorhazard/rhfest-action:latest
+
+  release:
+    name: Create Release
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: ⤵️ Check out code from GitHub
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Create ZIP archive
+        run: |
+          cd custom_plugins
+          zip -r "../${{ env.PLUGIN_NAME }}.zip" "${{ env.PLUGIN_NAME }}"
+
+      - name: Get tag
+        id: get-tag
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            current_tag="${{ github.event.inputs.tag }}"
+          else
+            current_tag="${GITHUB_REF#refs/tags/}"
+          fi
+          previous_tag=$(git tag --sort=-v:refname | grep -v "^$current_tag$" | head -n 1)
+          
+          # If no previous tag found, use a default value
+          if [ -z "$previous_tag" ]; then
+            previous_tag="HEAD"
+          fi
+          
+          echo "current_tag=${current_tag}" >> $GITHUB_OUTPUT
+          echo "previous_tag=${previous_tag}" >> $GITHUB_OUTPUT
+
+      - name: 📝 Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get-tag.outputs.current_tag }}
+          name: ${{ steps.get-tag.outputs.current_tag }}
+          body: |
+            ${{ github.event.head_commit.message }}
+
+            **Full Changelog**: https://github.com/L1cardo/${{ env.REPO_NAME }}/compare/${{ steps.get-tag.outputs.previous_tag }}...${{ steps.get-tag.outputs.current_tag }}
+          draft: false
+          prerelease: false
+          files: ${{ env.PLUGIN_NAME }}.zip
