@@ -8,7 +8,7 @@
     "description": "Displays voltage sensor data and race information on I2C OLED displays (SH1106/SSD1306)",
     "documentation_uri": "https://github.com/l1cardo/RH-OLED-Display.git",
     "required_rhapi_version": "1.0",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "dependencies": [
         "luma.oled",
         "pillow"
